@@ -11,7 +11,12 @@ router.get('/', async function(req, res, next) {
   const conn = await db.connect();
   const games = conn.collection("games");
   console.log(games);
-  const docs = await games.find({}).toArray();
+  let docs = await games.find({}).toArray();
+  console.log(docs);
+  docs = docs.map((doc) => {
+    doc["dev_url"] = `devs/${doc.dev}/`
+    return doc
+  });
   console.log(docs);
   res.json(docs);
 });

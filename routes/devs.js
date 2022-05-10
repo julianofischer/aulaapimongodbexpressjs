@@ -6,6 +6,7 @@ const db = require('../db.js');
 ObjectID = require('mongodb').ObjectID;
 const properties = ["nome", "_id"];
 
+//retorna todos os games de uma dev
 router.get('/:_id/games', async function (req, res, next) {
   const conn = await db.connect();
   const games = conn.collection("games");
@@ -15,7 +16,7 @@ router.get('/:_id/games', async function (req, res, next) {
   res.json(docs);
 });
 
-/* GET games listing. */
+/* GET dev listing */
 router.get('/', function (req, res, next) {
   db.connect()
   .then(conn => {
