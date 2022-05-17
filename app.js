@@ -7,9 +7,49 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var gamesRouter = require('./routes/games');
 var devsRouter = require('./routes/devs');
+var md5 = require('md5');
 
 var app = express();
 
+/*var bodyparser = require("body-parser");
+var swaggerJsdoc = require("swagger-jsdoc");
+var swaggerUi = require("swagger-ui-express");
+
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "LogRocket Express API with Swagger",
+      version: "0.1.0",
+      description:
+        "This is a simple CRUD API application made with Express and documented with Swagger",
+      license: {
+        name: "MIT",
+        url: "https://spdx.org/licenses/MIT.html",
+      },
+      contact: {
+        name: "LogRocket",
+        url: "https://logrocket.com",
+        email: "info@email.com",
+      },
+    },
+    servers: [
+      {
+        url: "http://localhost:3000/",
+      },
+    ],
+  },
+  apis: ["./routes/*.js"],
+};
+
+const specs = swaggerJsdoc(options);
+
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(specs)
+);
+*/
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -19,6 +59,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+var senha = "123456";
+//var timestamp = '1652749876466'
+var hash_senha = md5(senha)
+
+app.use((req, res, next) => {
+  let _, timestamp, token;
+  if(req.headers.authorization){
+    [_, timestamp, token] = req.headers.authorization.split(" ");
+  }else{
+    return res.status(403).json({erro: "Falha de autenticação"})
+  }
+  const token_g = md5(timestamp+hash_senha);
+  if (token_g === token) {
+    next();
+  }else{
+    return res.status(403).json({erro: "Falha de autenticação"})
+  }
+});
 
 app.use('/', indexRouter);
 app.use('/games', gamesRouter);
