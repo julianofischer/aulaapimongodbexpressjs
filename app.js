@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var gamesRouter = require('./routes/games');
 var devsRouter = require('./routes/devs');
 var md5 = require('md5');
+const db = require('./db.js');
 
 var app = express();
 
@@ -61,16 +62,27 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 var senha = "123456";
 //var timestamp = '1652749876466'
-var hash_senha = md5(senha)
 
-app.use((req, res, next) => {
-  let _, timestamp, token;
+app.use(async (req, res, next) => {
+  let _, token;
+  let login = req.body.login;
+  let timestamp = req.body.timestamp;
   if(req.headers.authorization){
-    [_, timestamp, token] = req.headers.authorization.split(" ");
+    [_, token] = req.headers.authorization.split(" ");
   }else{
     return res.status(403).json({erro: "Falha de autenticação"})
   }
-  const token_g = md5(timestamp+hash_senha);
+
+  const conn = await db.connect();
+  const usuarios = conn.collection("users");
+  const doc = await usuarios.findOne({ "login": login });
+  console.log(doc);
+
+  if(!doc){
+    return res.status(403).json({erro: "Usuário não existe"})
+  }
+
+  const token_g = md5(`${timestamp}${doc.pwd}`);
   if (token_g === token) {
     next();
   }else{
